@@ -1,0 +1,216 @@
+<html>
+<head>
+<title>Wintec Tools</title>
+</head>
+<body bgcolor=white>
+<h1>Wintec Tools</h1>
+
+The Wintec tools for the <a href="http://www.wintec.com.tw/en/product_detail.php?pro_id=65">Wintec WBT-201</a>
+(G-Rays II) GPS mouse and the <a href="http://www.wintec.com.tw/en/product_detail.php?pro_id=78">Wintec WSG-1000</a>
+(G-Trender) GPS receiver are a replacement for the main tasks of the Windows Time Machine X application, which is
+delivered with the devices.
+<p>
+If you can't run windows applications or prefer commandline tools over GUI applications, the Wintec Tools will be
+useful for you.
+<p/>
+If you need more information about the format of the Wintec files, I maintain some documentation on the
+<a href="wintec_201_fileformat.html">Wintec 201 Fileformat</a> page.
+<p/>
+The Wintec Tools are GPL licensed open source (freeware) written in <a href="http://www.python.org">Python</a>.
+<p/>
+<h3>Included tools</h3>
+<dl>
+<dt><b>overview.py</b></dt>
+<dd>Create static html file with information about TK files.</dd>
+
+<dt><b>readlog.py</b></dt>
+<dd>Read gps tracklogs from Wintec WBT-201 or WSG-1000 and write them into a .tk1 file.</dd>
+
+<dt><b>tk1split.py</b></dt>
+<dd>Split .tk1 files into .tk2 and/or .tk3 files.</dd>
+
+<dt><b>tk1totk1.py</b></dt>
+<dd>Read tk1 file, recalculate the footer data and create a tk1 file with a generic name.</dd>
+
+<dt><b>tkinfo.py</b></dt>
+<dd>Display TK file information and optionally set user comment string and/or timezone for .tk2/.tk3 files.</dd>
+
+<dt><b>tktogpx.py</b></dt>
+<dd>Convert gps tracklogs from Wintec TK files into a single GPS eXchange file.</dd>
+
+<dt><b>tktohtml.py</b></dt>
+<dd>Convert gps tracklogs from Wintec TK files into xml files and make them viewable
+with Google Maps and/or Microsoft Virtual Earth html file.</dd>
+
+<dt><b>tktonmea.py</b></dt>
+<dd>Convert gps tracklogs from Wintec TK files into a single NMEA-0183 file.</dd>
+
+</dl>
+
+<h2>Download</h2>
+
+The first link contains the Wintec tools as standalone executables for Windows. The zip file must be extracted into a
+directory, which should be added to the path environment variable to be able to run the programs from any location.
+This distribution doesn't need Python to be installed on the PC!
+<p>
+The second link contains the python scripts, which can be used on any operating system with Python 2.5 or later
+installed.
+<p>
+<a href="http://www.steffensiebert.de/soft/python/wintectools2_1_win.zip">Windows standalone executables of Wintec Tools
+version 2.1</a> (zip file)<br>
+<a href="http://www.steffensiebert.de/soft/python/wintectools2_1.zip">Wintec Tools version 2.1</a> (zip file)
+
+<h2>Requirements</h2>
+Please note: These requirements are not needed for the Windows standalone executables!
+<ol>
+<li><a href="http://www.python.org">Python</a> 2.5 or later
+<li><a href="http://pytz.sourceforge.net/">pytz</a> World Timezone Definitions for Python
+<li><a href="http://ibarona.googlepages.com/uspp">USPP 1.0</a>, the Universal Serial Port Python Library
+<li><a href="http://sourceforge.net/projects/pywin32/">Python for Windows Extensions</a> is required on Windows by USPP
+</ol>
+<h2>Support</h2>
+The latest version of the wintec tools is always available from my homepage:
+<a href="http://www.SteffenSiebert.de/soft/python/wintec_tools.html">
+http://www.SteffenSiebert.de/soft/python/wintec_tools.html</a><p/>If you have bug reports, patches or some questions,
+just send a mail to <a href="mailto:wintec_tools@SteffenSiebert.de">wintec_tools@SteffenSiebert.de</a>
+
+<h2>Usage</h2>
+
+Note: The -o option to specify the output filename is optional and should be used for special needs only. Without this
+option the tools create and use generic filenames based on the date and time of first point of the containted track.
+<h4>overview.py</h4>
+<pre>Create static html file with information about TK files.
+
+Usage: overview.py [-d directory]
+-d: Process tk files in directory.</pre>
+
+<h4>readlog.py</h4>
+<pre>Read gps tracklogs from Wintec WBT-201 or WSG-1000 and write them into a .tk1 file.
+
+Usage: readlog.py [-v] [-p password] [-d outputdir] [-o filename] [--delete] &lt;serial port&gt;
+-v: Print debug info.
+-p: Wintec WBT-201 password (4 digits).
+-d: Use output directory.
+-o: Use output filename.
+--delete: Delete log from device after successful read.</pre>
+
+<h4>tk1split.py</h4>
+<pre>Split .tk1 files into .tk2 and/or .tk3 files.
+
+Usage: tk1split.py [-2] [-3] [-d directory] [--d2 directory] [--d3 directory] [-c "user comment"] [-t +hh:mm|--autotz] &lt;tk1 files&gt;
+-2: Create .tk2 files.
+-3: Create .tk3 files.
+-d: Use output directory for tk2 and tk3 files.
+--d2: Use output directory for tk2 files.
+--d3: Use output directory for tk3 files.
+-c: User comment string to store in the .tk2/tk3 header.
+-t: Use timezone for local time (offset to UTC).
+--autotz: Determine timezone from first trackpoint.</pre>
+
+<h4>tk1totk1.py</h4>
+<pre>Read tk1 file, recalculate the footer data and create a tk1 file with a generic name.
+
+Usage: tk1totk1.py [-d directory] [-o filename] [--delete] &lt;tk1 file&gt;
+-d: Use output directory.
+-o: Use output filename.
+--delete: Delete source file after successful processing.</pre>
+
+<h4>tkinfo.py</h4>
+<pre>Display TK file information and optionally set user comment string and/or timezone for .tk2/.tk3 files.
+
+Usage: tkinfo.py [-c "user comment"] [-t +hh:mm|--autotz] &lt;tk files&gt;
+-c: User comment string to store in the .tk2/tk3 header.
+-t: .tk2/.tk3: Set timezone for local time (offset to UTC). .tk1: Ignored.
+--autotz: .tk2/.tk3: Determine timezone from first trackpoint. .tk1: Ignored.</pre>
+
+<h4>tktogpx.py</h4>
+<pre>Convert gps tracklogs from Wintec TK files into a single GPS eXchange file.
+
+Usage: tktogpx.py [-d outputdir] [-o filename] [-t +hh:mm|--autotz] &lt;tk files&gt;
+-d: Use output directory.
+-o: Use output filename.
+-t: .tk1     : Use timezone for local time (offset to UTC).
+    .tk2/.tk3: Use timezone stored in tk-file.
+--autotz: .tk1     : Determine timezone from first trackpoint.
+          .tk2/.tk3: Use timezone stored in tk-file.
+
+Note: The time in .gpx files is defined as UTC. If you use the -t or --autotz
+option, the time is converted to the timezone, but still marked as UTC.
+The used timezone is added to the &lt;desc&gt; tag.</pre>
+
+<h4>tktohtml.py</h4>
+<pre>Convert gps tracklogs from Wintec TK files into xml files and make them viewable
+with Google Maps and/or Microsoft Virtual Earth html file.
+
+Usage: tktohtml.py [-g] [-v] [-d directory] [-o filename] [-t +hh:mm|--autotz] &lt;tk files&gt;
+-g: Create Google Maps html file.
+-v: Create Microsoft Virtual Earth html file.
+-d: Use output directory.
+-o: Use output filename.
+-t: .tk1: Use timezone for local time (offset to UTC). .tk2/.tk3: Ignored.
+--autotz: .tk1: Determine timezone from first trackpoint. .tk2/.tk3: Ignored.</pre>
+
+<h4>tktonmea.py</h4>
+<pre>Convert gps tracklogs from Wintec TK files into a single NMEA-0183 file.
+
+Usage: tktonmea.py [-d outputdir] [-o filename] &lt;tk files&gt;
+-d: Use output directory.
+-o: Use output filename.</pre>
+
+
+<h2>Known Issues</h2>
+The Time Machine X 2.7.0 doesn't set the log version to 2.0 for WGS-1000 logs containing temperature and air pressure
+values. Use tk1totk1 to create a fixed TK1 file or use readlog instead of TMX to read the log from GPS device.
+<p/>
+Computed values like track length, speed, direction might differ from the values in files created by
+Time Machine X 2.7.0. For most values the difference should be rather small, but the direction is more than 10 degrees
+off, because Time Machine X 2.7.0 computes wrong values. This issue is fixed in Time Machine X 2.7.1.
+<br>
+Generally the values computed by Wintec tools should be more accurate than the values of Time Machine X, as they use
+the very precise Vincenty formula with the WGS-84 ellipsoidal earth model.
+
+<h2>Changelog</h2>
+
+<h3>Version 2.1</h3>
+<ul>
+<li>readlog: The WGS-1000 sometimes returns the wrong block. Retry if the returned data block is not the requested one.
+<li>readlog: Wrapped logbuffer handling was broken.
+<li>readlog: The WSG-1000 doesn't pad the checksum with a trailing zero.
+<li>tktogpx: Recognize options -t and --autotz.
+</ul>
+
+<h3>Version 2.0</h3>
+<ul>
+<li>Local timezone can be automatically determined by location and date/time of first trackpoint.
+<li>Windows executables available (running without separate Python installation).
+<li>Wintec WSG-1000 support added to readlog.
+<li>Support log format 2.0 of WSG-1000 (temperature and air pressure).
+<li>.tk2 and .tk3 support added including user comments.
+<li>NMEA output format added.
+<li>Google Maps output added.
+<li>GPX/NMEA/Google Maps/Virtual Earth format is Time Machine X 2.7.1 compatible.
+<li>Support for 64-bit operating systems.
+</ul>
+
+<h3>Version 1.0</h3>
+<ul>
+<li>Initial release.
+</ul>
+
+<h2>Links</h2>
+<ul>
+<li><a href="http://www.wintec.com.tw/en/support_detail.php?cate_id=11&support_id=65">Wintec WBT-201 support download
+page</a>
+<li><a href="http://www.wintec.com.tw/en/support_detail.php?cate_id=11&support_id=70">Wintec WSG-1000 support download
+page</a>
+<li><a href="http://lai0330.googlepages.com/">Time Machine X/Wintec Firmware beta releases</a>
+<li><a href="http://www.wintec-gps.de/support.php">German Wintec distributor support download page</a>
+<li><a href="http://www.hexten.net/wiki/index.php/WBT-201">GPSBabel version with Wintec support</a>
+<li><a href="http://www.mobihand.com/product.asp?id=12327">WintecTool is a PalmOS Application to download tracklogs and
+change settings with PalmOS powered devices</a>
+<li>Several tools are available for geotagging photos with tracklog data; I recommend
+<a href="http://happycamel.sourceforge.net/">HappyCamel</a>, which is also freeware written in Python and contains
+unique features like <a href="http://www.geonames.org/export/reverse-geocoding.html">reverse geocoding</a>.
+</ul>
+
+</body>
