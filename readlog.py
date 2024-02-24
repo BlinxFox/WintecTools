@@ -53,7 +53,7 @@ import getopt
 import os
 import sys
 import time
-import uspp
+import serial
 
 from winteclib import VERSION, Trackpoint, TK1File, createOutputFile
 
@@ -71,7 +71,8 @@ def isChecksumCorrect(buf, checksum):
     """
     cs = 0
     for char in buf:
-        cs = cs ^ ord(char)
+        cs = cs ^ char
+
     return cs == int(checksum, 16)
 
 def getLogString(tty, debug):
@@ -84,8 +85,8 @@ def getLogString(tty, debug):
     """
     line = tty.readline()
     if debug:
-        print line
-    return line.split(",")[-1].strip()
+        print(line)
+    return line.split(b",")[-1].strip()
 
 def getLogValue(tty, debug):
     """
@@ -120,19 +121,19 @@ def readLog(tty, password, debug):
     # pylint: disable-msg=R0912,R0914,R0915
 
     # Make sure that bypass mode is enabled.
-    tty.write("@AL,02,01\n")
+    tty.write(b"@AL,02,01\n")
     tty.readline()
 
-    print "Enter command mode"
+    print("Enter command mode")
     # Try to switch WBT-201 into command mode.
     if password:
-        tty.write("@AL,1%s\n" % password)
+        tty.write(b"@AL,1%s\n" % password)
     else:
-        tty.write("@AL\n")
+        tty.write(b"@AL\n")
 
     # Try to switch WSG-1000 into command mode.
-    tty.write("@AL,2,3\n")
-    tty.write("@AL,2,3\n")
+    tty.write(b"@AL,2,3\n")
+    tty.write(b"@AL,2,3\n")
 
     # All supported devices should be now in command mode.
     ready = 0
@@ -141,27 +142,27 @@ def readLog(tty, password, debug):
     while 1:
         try:
             line = tty.readline()
-        except uspp.SerialPortException:
+        except serial.SerialTimeoutException:
             if password == None:
-                print "Device seem to be password protected!"
-                print "Please provide the correct password using option -p"
+                print("Device seem to be password protected!")
+                print("Please provide the correct password using option -p")
                 return None
             else:
-                print "Device seem not to be password protected!"
-                print "Please don't use option -p"
+                print("Device seem not to be password protected!")
+                print("Please don't use option -p")
                 return None
         if debug:
-            print line
-            print toHex(line)
-        if "@AL,LoginOK" in line:
+            print(line)
+            #print(toHex(line))
+        if b"@AL,LoginOK" in line:
             ready = 1
             break
-        if "@AL,PassworError" in line:
+        if b"@AL,PassworError" in line:
             if password:
-                print "Wrong Password"
+                print("Wrong Password")
             else:
-                print "Device is password protected!"
-                print "Please provide the correct password using option -p"
+                print("Device is password protected!")
+                print("Please provide the correct password using option -p")
             return None
         retrycount = retrycount - 1
         if retrycount <= 0:
@@ -174,26 +175,26 @@ def readLog(tty, password, debug):
             tty.readline()
 
         # Read information from device.
-        tty.write("@AL,07,01\n")
+        tty.write(b"@AL,07,01\n")
         devicename = getLogString(tty, debug)
-        tty.write("@AL,07,02\n")
+        tty.write(b"@AL,07,02\n")
         deviceinfo = getLogString(tty, debug)
-        tty.write("@AL,07,03\n")
+        tty.write(b"@AL,07,03\n")
         deviceserial = getLogString(tty, debug)
-        tty.write("@AL,05,01\n")
+        tty.write(b"@AL,05,01\n")
         logstart = getLogValue(tty, debug)
-        tty.write("@AL,05,02\n")
+        tty.write(b"@AL,05,02\n")
         logend = getLogValue(tty, debug)
-        tty.write("@AL,05,09\n")
+        tty.write(b"@AL,05,09\n")
         logareastart = getLogValue(tty, debug)
-        tty.write("@AL,05,10\n")
+        tty.write(b"@AL,05,10\n")
         logareaend = getLogValue(tty, debug)
 
-        print "Logarea: %s-%s (%08x-%08x)" % (logareastart, logareaend, logareastart, logareaend)
-        print "Log: %s-%s (%08x-%08x)" % (logstart, logend, logstart, logend)
+        print("Logarea: %s-%s (%08x-%08x)" % (logareastart, logareaend, logareastart, logareaend))
+        print("Log: %s-%s (%08x-%08x)" % (logstart, logend, logstart, logend))
 
         if logstart == logend:
-            print "No logdata available for export"
+            print("No logdata available for export")
             return None
 
         logcapacy = (logareaend - logareastart) / Trackpoint.TRACKPOINTLEN
@@ -207,31 +208,31 @@ def readLog(tty, password, debug):
         else:
             readcount = BLOCKSIZE
         readstart = int(logstart)
-        tracklog = ''
+        tracklog = b''
         retryCount = 5
 
         while True:
             assert readcount > 0
-            print "Read buffer at %s (%s Bytes)" % (readstart, readcount)
-            tty.write("@AL,05,03,%i\n" % readstart)
+            print("Read buffer at %s (%s Bytes)" % (readstart, readcount))
+            tty.write(b"@AL,05,03,%i\n" % readstart)
             try:
                 buf = tty.read(readcount)
-            except uspp.SerialPortException:
-                print "Buffer read timeout, retrying"
+            except serial.SerialTimeoutException:
+                print("Buffer read timeout, retrying")
                 continue
             line = tty.readline()
             if debug:
-                print line
-            _, _, checksum, blockstart = line.split(",")
+                print(line)
+            _, _, checksum, blockstart = line.split(b",")
             blockstart = int(blockstart.strip())
             if debug:
-                print "Expected block checksum: " + checksum
+                print("Expected block checksum:", checksum)
             if not (readstart == blockstart and isChecksumCorrect(buf, checksum)):
                 retryCount = retryCount - 1
                 if retryCount <= 0:
                     break
                 else:
-                    print "Buffer read error, retrying"
+                    print("Buffer read error, retrying")
                     tty.flush()
                     continue
             else:
@@ -251,7 +252,7 @@ def readLog(tty, password, debug):
         tk1 = TK1File()
         tk1.init(devicename, deviceinfo, deviceserial, tracklog)
     else:
-        print "Can't switch into command mode!"
+        print("Can't switch into command mode!")
     return tk1
 
 def usage():
@@ -259,14 +260,14 @@ def usage():
     Print program usage.
     """
     executable = os.path.split(sys.argv[0])[1]
-    print "%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION)
-    print "Read gps tracklogs from Wintec WBT-201 or WSG-1000 and write them into a .tk1 file.\n"
-    print "Usage: %s [-v] [-p password] [-d outputdir] [-o filename] [--delete] <serial port>" % executable
-    print "-v: Print debug info."
-    print "-p: Wintec WBT-201 password (4 digits)."
-    print "-d: Use output directory."
-    print "-o: Use output filename."
-    print "--delete: Delete log from device after successful read."
+    print("%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION))
+    print("Read gps tracklogs from Wintec WBT-201 or WSG-1000 and write them into a .tk1 file.\n")
+    print("Usage: %s [-v] [-p password] [-d outputdir] [-o filename] [--delete] <serial port>" % executable)
+    print("-v: Print debug info.")
+    print("-p: Wintec WBT-201 password (4 digits).")
+    print("-d: Use output directory.")
+    print("-o: Use output filename.")
+    print("--delete: Delete log from device after successful read.")
 
 def main():
     """
@@ -306,27 +307,27 @@ def main():
             deleteLog = True
 
     if outputDir and not os.path.exists(outputDir):
-        print "Output directory %s doesn't exist!" % outputDir
+        print("Output directory %s doesn't exist!" % outputDir)
         sys.exit(3)
 
     if filename and os.path.exists(os.path.join(outputDir if outputDir else ".", filename)):
-        print "Output file %s already exists!" % filename
+        print("Output file %s already exists!" % filename)
         sys.exit(4)
 
     tty = None
     try:
-        tty = uspp.SerialPort(args[0], READ_TIMEOUT, BAUDRATE)
+        tty = serial.Serial(args[0], BAUDRATE, timeout=READ_TIMEOUT)
         tk1 = readLog(tty, password, debug)
         if tk1:
             f = createOutputFile(outputDir, filename, "%s", tk1.createFilename(), flags = "wb")
             tk1.write(f)
             f.close()
             if deleteLog:
-                tty.write("@AL,05,06\n")
+                tty.write(b"@AL,05,06\n")
     finally:
         if tty != None:
-            print "Exit command mode"
-            tty.write("@AL,02,01\n")
+            print("Exit command mode")
+            tty.write(b"@AL,02,01\n")
             del tty
 
 if __name__ == "__main__":

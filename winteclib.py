@@ -53,10 +53,10 @@ import locale
 import os
 from pytz import FixedOffset, timezone as gettimezone, utc, open_resource, ZERO, _FixedOffset
 import re
-import StringIO
+from io import StringIO as StringIO
 import sys
 import time
-import urllib2
+# import urllib2
 import zipfile
 
 VERSION = "2.1"
@@ -413,7 +413,7 @@ class TK1File:
     HEADERLEN = 0x0400
     """ The length in bytes of the TK1 header. """
 
-    FILEMARKER = 'WintecLogFormat'
+    FILEMARKER = b'WintecLogFormat'
     """ The identification marker at the beginning of the TK1 file. """
 
     EXPORT_TIMESTAMP_FORMAT = "%Y_%m_%d_%H:%M:%S"
@@ -749,7 +749,7 @@ class TK1File:
         @param tracks: A dictionary the track footer data created by l{parseTracklog()}.
         @return the footer data.
         """
-        footer = ''
+        footer = b''
         footerEntry = TK1File.FooterEntry()
         for key in tracks.keys():
             footerEntry.create(key, tracks[key])
@@ -771,23 +771,25 @@ class TK1File:
         @param exportTimestamp: The date and time of the data export.
         """
         if exportTimestamp == None:
-            exportTimestamp = time.strftime(TK1File.EXPORT_TIMESTAMP_FORMAT, time.localtime())
-        trackpointcount = trackdatalen / Trackpoint.TRACKPOINTLEN
+            exportTimestamp = time.strftime(TK1File.EXPORT_TIMESTAMP_FORMAT, time.localtime()).encode("ascii")
+        trackpointcount = int(trackdatalen / Trackpoint.TRACKPOINTLEN)
         footerpos = trackdatalen + TK1File.HEADERLEN
-        header = TK1File.FILEMARKER + chr(0x00) + \
-                 struct.pack('<f', logversion) + \
-                 struct.pack('<f', SOFTWARE_VERSION) + \
-                 struct.pack('<f', HARDWARE_VERSION) + \
-                 chr(0x41) + chr(0xbf) + chr(0x10) + chr(0x00) + \
-                 struct.pack('<i', trackpointcount) + \
-                 chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 devicename + fillBytes(chr(0), 20-len(devicename)) + \
-                 deviceinfo + fillBytes(chr(0), 20-len(deviceinfo)) + \
-                 deviceserial + fillBytes(chr(0), 40-len(deviceserial)) + \
-                 exportTimestamp + chr(0) + \
-                 struct.pack('<i', footerpos) + \
-                 struct.pack('<i', trackcount) + \
-                 fillBytes(chr(0), 876)
+        header = b""
+        header += TK1File.FILEMARKER + bytes([0x00])
+        header += struct.pack('<f', logversion)
+        header += struct.pack('<f', SOFTWARE_VERSION)
+        header += struct.pack('<f', HARDWARE_VERSION)
+        header += bytes([0x41, 0xbf, 0x10, 0x00])
+        header += struct.pack('<i', trackpointcount)
+        header += bytes([0x00, 0x00, 0x00, 0x00])
+        header += devicename + fillBytes(0x00, 20-len(devicename))
+        header += deviceinfo + fillBytes(0x00, 20-len(deviceinfo))
+        header += deviceserial + fillBytes(0x00, 40-len(deviceserial))
+        header += exportTimestamp + bytes([0x00])
+        header += struct.pack('<i', footerpos)
+        header += struct.pack('<i', trackcount)
+        header += fillBytes(0x00, 876)
+        print("len", len(header), TK1File.HEADERLEN)
         assert len(header) == TK1File.HEADERLEN
         return header
 
@@ -1336,7 +1338,7 @@ def readTKFile(fileName):
     try:
         fileClass = fileTypes[fileMarker]
     except KeyError:
-        print "%s is not a valid TK file!" % fileName
+        print("%s is not a valid TK file!" % fileName)
         return None
     tkFile = fileClass()
     f.seek(0)
@@ -1362,7 +1364,7 @@ def createOutputFile(outputDir, filename, template, value, flags = "w"):
         filename = template % value
     if outputDir:
         filename = os.path.join(outputDir, filename) 
-    print 'Create %s' % filename
+    print('Create %s' % filename)
     return open(filename, flags)
 
 def fillBytes(byte, count):
@@ -1374,7 +1376,7 @@ def fillBytes(byte, count):
     @return: A string of bytes with the given length.
     """
     assert count >= 0
-    return count * byte
+    return count * bytes([byte])
 
 def guessLogVersion(trackdata):
     """
