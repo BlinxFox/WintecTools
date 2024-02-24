@@ -225,6 +225,7 @@ def readLog(tty, password, debug):
                 print(line)
             _, _, checksum, blockstart = line.split(b",")
             blockstart = int(blockstart.strip())
+            line = tty.readline()
             if debug:
                 print("Expected block checksum:", checksum)
             if not (readstart == blockstart and isChecksumCorrect(buf, checksum)):
