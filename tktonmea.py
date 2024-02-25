@@ -175,11 +175,11 @@ def usage():
     Print program usage.
     """
     executable = os.path.split(sys.argv[0])[1]
-    print "%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION)
-    print "Convert gps tracklogs from Wintec TK files into a single NMEA-0183 file.\n"
-    print "Usage: %s [-d outputdir] [-o filename] <tk files>" % executable
-    print "-d: Use output directory."
-    print "-o: Use output filename."
+    print("%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION))
+    print("Convert gps tracklogs from Wintec TK files into a single NMEA-0183 file.\n")
+    print("Usage: %s [-d outputdir] [-o filename] <tk files>" % executable)
+    print("-d: Use output directory.")
+    print("-o: Use output filename.")
 
 def main():
     """
@@ -209,7 +209,7 @@ def main():
             filename = a
 
     if outputDir and not os.path.exists(outputDir):
-        print "Output directory %s doesn't exist!" % outputDir
+        print("Output directory %s doesn't exist!" % outputDir)
         sys.exit(3)
 
     tkfiles = []
@@ -217,7 +217,7 @@ def main():
         for tkFileName in glob(arg):
             tkfiles.append(readTKFile(tkFileName))
 
-    tkfiles.sort(lambda x, y: cmp(x.getFirstTrackpoint().getDateTime(), y.getFirstTrackpoint().getDateTime()))
+    tkfiles.sort(key=lambda x: x.getFirstTrackpoint().getDateTime())
     
     try:
         if len(tkfiles) > 1:
