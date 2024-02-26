@@ -88,7 +88,7 @@ def writeFile(tkFile, directory = None):
     fileName = tkFile.createFilename()
     if directory:
         fileName = os.path.join(directory, fileName)
-    print "Create %s" % fileName
+    print("Create %s" % fileName)
     f = open(fileName, 'wb')
     tkFile.write(f)
     f.close()
@@ -98,18 +98,18 @@ def usage():
     Print program usage.
     """
     executable = os.path.split(sys.argv[0])[1]
-    print "%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION)
-    print "Split .tk1 files into .tk2 and/or .tk3 files.\n"
-    print 'Usage: %s [-2] [-3] [-d directory] [--d2 directory] [--d3 directory] [-c "user comment"]' % executable,
-    print "[-t +hh:mm|--autotz] <tk1 files>"
-    print "-2: Create .tk2 files."
-    print "-3: Create .tk3 files."
-    print "-d: Use output directory for tk2 and tk3 files."
-    print "--d2: Use output directory for tk2 files."
-    print "--d3: Use output directory for tk3 files."
-    print "-c: User comment string to store in the .tk2/tk3 header."
-    print "-t: Use timezone for local time (offset to UTC)."
-    print "--autotz: Determine timezone from first trackpoint."
+    print("%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION))
+    print("Split .tk1 files into .tk2 and/or .tk3 files.\n")
+    print('Usage: %s [-2] [-3] [-d directory] [--d2 directory] [--d3 directory] [-c "user comment"]' % executable,)
+    print("[-t +hh:mm|--autotz] <tk1 files>")
+    print("-2: Create .tk2 files.")
+    print("-3: Create .tk3 files.")
+    print("-d: Use output directory for tk2 and tk3 files.")
+    print("--d2: Use output directory for tk2 files.")
+    print("--d3: Use output directory for tk3 files.")
+    print("-c: User comment string to store in the .tk2/tk3 header.")
+    print("-t: Use timezone for local time (offset to UTC).")
+    print("--autotz: Determine timezone from first trackpoint.")
 
 def main():
     """
@@ -152,7 +152,7 @@ def main():
         if o == "-t":
             timezone = parseTimezone(a)
             if timezone == None:
-                print "Timzone string doesn't match pattern +hh:mm!"
+                print("Timzone string doesn't match pattern +hh:mm!")
                 sys.exit(4)
         if o == "-c":
             comment = a
@@ -164,10 +164,10 @@ def main():
         createTk2 = createTk3 = True
 
     if tk2OutputDir and not os.path.exists(tk2OutputDir):
-        print "Output directory %s doesn't exist!" % tk2OutputDir
+        print("Output directory %s doesn't exist!" % tk2OutputDir)
         sys.exit(3)
     if tk3OutputDir and not os.path.exists(tk3OutputDir):
-        print "Output directory %s doesn't exist!" % tk3OutputDir
+        print("Output directory %s doesn't exist!" % tk3OutputDir)
         sys.exit(3)
 
     filelist = []
@@ -175,14 +175,14 @@ def main():
         filelist += glob(arg)
 
     for tk1FileName in filelist:
-        print "Reading %s" % tk1FileName
+        print("Reading %s" % tk1FileName)
         tk1File = readTKFile(tk1FileName)
         if tk1File == None:
-            print "Can't read %s!" % tk1FileName
+            print("Can't read %s!" % tk1FileName)
         elif not isinstance(tk1File, TK1File):
-            print "%s is not a .tk1 file!" % tk1FileName
+            print("%s is not a .tk1 file!" % tk1FileName)
         else:
-            print "Track count: %i" % tk1File.getTrackCount()
+            print("Track count: %i" % tk1File.getTrackCount())
             tk1File.setAutotimezone(autotimezone)
             tk1File.setTimezone(timezone)
             tk2Files, tk3Files = splitTK1(tk1File, comment)
