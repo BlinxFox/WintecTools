@@ -1293,7 +1293,7 @@ class TK3File(TK2File):
         @param comment: A user comment string.
         """
         # pylint: disable-msg=W0221,R0914
-        trackpointcount = trackdatalen / Trackpoint.TRACKPOINTLEN
+        trackpointcount = int(trackdatalen / Trackpoint.TRACKPOINTLEN)
         commentUnicode = comment[:150].encode('utf_16')
         firstTrackpoint = Trackpoint(self.trackdata[0:Trackpoint.TRACKPOINTLEN])
         lastTrackpoint = Trackpoint(self.trackdata[-Trackpoint.TRACKPOINTLEN:])
@@ -1301,24 +1301,26 @@ class TK3File(TK2File):
         firstTrackpointDate = firstTrackpointDate[:-2] + ":" + firstTrackpointDate[-2:]
         lastTrackpointDate = lastTrackpoint.getDateTime(timezone).strftime("%Y-%m-%dT%H:%M:%SZ%z")
         lastTrackpointDate = lastTrackpointDate[:-2] + ":" + lastTrackpointDate[-2:]
+        lastTrackpointDate = lastTrackpointDate.encode("ascii")
 
-        header = TK3File.FILEMARKER + chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 struct.pack('<f', logversion) + \
-                 struct.pack('<f', SOFTWARE_VERSION) + \
-                 struct.pack('<f', HARDWARE_VERSION) + \
-                 chr(0x41) + chr(0xbf) + \
-                 devicename + fillBytes(chr(0), 20-len(devicename)) + \
-                 deviceinfo + fillBytes(chr(0), 20-len(deviceinfo)) + \
-                 fillBytes(chr(0), 40) + \
-                 exporttimestring + fillBytes(chr(0), 20-len(exporttimestring)) + \
-                 commentUnicode + fillBytes(chr(0), 300-len(commentUnicode)) + \
-                 self.formatTkTimezone(timezone) + \
-                 firstTrackpointDate + \
-                 chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 lastTrackpointDate + \
-                 chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 struct.pack('<i', trackpointcount) + \
-                 fillBytes(chr(0), 527)
+        header = b""
+        header += TK3File.FILEMARKER + bytes([0x00, 0x00, 0x00, 0x00])
+        header += struct.pack('<f', logversion)
+        header += struct.pack('<f', SOFTWARE_VERSION)
+        header += struct.pack('<f', HARDWARE_VERSION)
+        header +=  bytes([0x41, 0xbf])
+        header += devicename + fillBytes(0x00, 20-len(devicename))
+        header += deviceinfo + fillBytes(0x00, 20-len(deviceinfo))
+        header += fillBytes(0x00, 40)
+        header += exporttimestring + fillBytes(0x00, 20-len(exporttimestring))
+        header += commentUnicode + fillBytes(0x00, 300-len(commentUnicode))
+        header += self.formatTkTimezone(timezone)
+        header += firstTrackpointDate
+        header += bytes([0x00, 0x00, 0x00, 0x00])
+        header += lastTrackpointDate
+        header += bytes([0x00, 0x00, 0x00, 0x00])
+        header += struct.pack('<i', trackpointcount)
+        header += fillBytes(0x00, 527)
         assert len(header) == TK3File.HEADERLEN
         return header
 

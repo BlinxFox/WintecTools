@@ -68,12 +68,12 @@ def usage():
     Print program usage.
     """
     executable = os.path.split(sys.argv[0])[1]
-    print "%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION)
-    print "Read tk1 file, recalculate the footer data and create a tk1 file with a generic name.\n"
-    print 'Usage: %s [-d directory] [-o filename] [--delete] <tk1 file>' % executable
-    print "-d: Use output directory."
-    print "-o: Use output filename."
-    print "--delete: Delete source file after successful processing."
+    print("%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION))
+    print("Read tk1 file, recalculate the footer data and create a tk1 file with a generic name.\n")
+    print('Usage: %s [-d directory] [-o filename] [--delete] <tk1 file>' % executable)
+    print("-d: Use output directory.")
+    print("-o: Use output filename.")
+    print("--delete: Delete source file after successful processing.")
 
 def main():
     """
@@ -105,7 +105,7 @@ def main():
             deleteSource = True
 
     if filename and os.path.exists(os.path.join(outputDir if outputDir else ".", filename)):
-        print "Output file %s already exists!" % filename
+        print("Output file %s already exists!" % filename)
         sys.exit(4)
 
     tk1Source = TK1File()
