@@ -4,6 +4,8 @@
 ##
 ## Copyright (c) 2008 Steffen Siebert <siebert@steffensiebert.de>
 ##
+## Ported to Python 3 by BlinxFox
+##
 #################################################################################
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -24,18 +26,19 @@
 ## Requirements                                                                ##
 #################################################################################
 ##
-## Python 2.5 or later:
+## Python 3.10 or later:
 ## <http://www.python.org>
 ##
 #################################################################################
 ## Support                                                                     ##
 #################################################################################
 ##
-## The latest version of the wintec tools is always available from my homepage:
-## <http://www.SteffenSiebert.de/soft/python/wintec_tools.html>
+## The latest version of the wintec tools is available on Github
+## <https://github.com/BlinxFox/WintecTools>
 ##
-## If you have bug reports, patches or some questions, just send a mail to
-## <wintec_tools@SteffenSiebert.de>
+## If you have bug reports, patches or some questions, please create an 
+## issue on Github:
+## <https://github.com/BlinxFox/WintecTools>
 ##
 #################################################################################
 
@@ -53,10 +56,10 @@ import locale
 import os
 from pytz import FixedOffset, timezone as gettimezone, utc, open_resource, ZERO, _FixedOffset
 import re
-import StringIO
+from io import StringIO as StringIO
 import sys
 import time
-import urllib2
+# import urllib2
 import zipfile
 
 VERSION = "2.1"
@@ -413,7 +416,7 @@ class TK1File:
     HEADERLEN = 0x0400
     """ The length in bytes of the TK1 header. """
 
-    FILEMARKER = 'WintecLogFormat'
+    FILEMARKER = b'WintecLogFormat'
     """ The identification marker at the beginning of the TK1 file. """
 
     EXPORT_TIMESTAMP_FORMAT = "%Y_%m_%d_%H:%M:%S"
@@ -588,7 +591,7 @@ class TK1File:
         
         @return: The name of the gps device. 
         """
-        return self.header[0x0028:0x003b].strip(chr(0))
+        return self.header[0x0028:0x003b].strip(bytes([0]))
 
     def getDeviceInfo(self):
         """
@@ -596,7 +599,7 @@ class TK1File:
         
         @return: The gps device information. 
         """
-        return self.header[0x003c:0x004f].strip(chr(0))
+        return self.header[0x003c:0x004f].strip(bytes([0]))
 
     def getDeviceSerial(self):
         """
@@ -604,7 +607,7 @@ class TK1File:
         
         @return: The serial number of the gps device. 
         """
-        return self.header[0x0050:0x005e].strip(chr(0))
+        return self.header[0x0050:0x005e].strip(bytes([0]))
 
     def getExportTimeString(self):
         """
@@ -612,7 +615,7 @@ class TK1File:
         
         @return: The date and time of the export. 
         """
-        return self.header[0x0078:0x008b].strip(chr(0))
+        return self.header[0x0078:0x008b].strip(bytes([0]))
 
     def getTrackpointCount(self):
         """
@@ -749,7 +752,7 @@ class TK1File:
         @param tracks: A dictionary the track footer data created by l{parseTracklog()}.
         @return the footer data.
         """
-        footer = ''
+        footer = b''
         footerEntry = TK1File.FooterEntry()
         for key in tracks.keys():
             footerEntry.create(key, tracks[key])
@@ -771,23 +774,25 @@ class TK1File:
         @param exportTimestamp: The date and time of the data export.
         """
         if exportTimestamp == None:
-            exportTimestamp = time.strftime(TK1File.EXPORT_TIMESTAMP_FORMAT, time.localtime())
-        trackpointcount = trackdatalen / Trackpoint.TRACKPOINTLEN
+            exportTimestamp = time.strftime(TK1File.EXPORT_TIMESTAMP_FORMAT, time.localtime()).encode("ascii")
+        trackpointcount = int(trackdatalen / Trackpoint.TRACKPOINTLEN)
         footerpos = trackdatalen + TK1File.HEADERLEN
-        header = TK1File.FILEMARKER + chr(0x00) + \
-                 struct.pack('<f', logversion) + \
-                 struct.pack('<f', SOFTWARE_VERSION) + \
-                 struct.pack('<f', HARDWARE_VERSION) + \
-                 chr(0x41) + chr(0xbf) + chr(0x10) + chr(0x00) + \
-                 struct.pack('<i', trackpointcount) + \
-                 chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 devicename + fillBytes(chr(0), 20-len(devicename)) + \
-                 deviceinfo + fillBytes(chr(0), 20-len(deviceinfo)) + \
-                 deviceserial + fillBytes(chr(0), 40-len(deviceserial)) + \
-                 exportTimestamp + chr(0) + \
-                 struct.pack('<i', footerpos) + \
-                 struct.pack('<i', trackcount) + \
-                 fillBytes(chr(0), 876)
+        header = b""
+        header += TK1File.FILEMARKER + bytes([0x00])
+        header += struct.pack('<f', logversion)
+        header += struct.pack('<f', SOFTWARE_VERSION)
+        header += struct.pack('<f', HARDWARE_VERSION)
+        header += bytes([0x41, 0xbf, 0x10, 0x00])
+        header += struct.pack('<i', trackpointcount)
+        header += bytes([0x00, 0x00, 0x00, 0x00])
+        header += devicename + fillBytes(0x00, 20-len(devicename))
+        header += deviceinfo + fillBytes(0x00, 20-len(deviceinfo))
+        header += deviceserial + fillBytes(0x00, 40-len(deviceserial))
+        header += exportTimestamp + bytes([0x00])
+        header += struct.pack('<i', footerpos)
+        header += struct.pack('<i', trackcount)
+        header += fillBytes(0x00, 876)
+        print("len", len(header), TK1File.HEADERLEN)
         assert len(header) == TK1File.HEADERLEN
         return header
 
@@ -849,7 +854,7 @@ class TK2File:
     HEADERLEN = 0x0400
     """ The length in bytes of the TK2 header. """
 
-    FILEMARKER = 'WintecLogTk2'
+    FILEMARKER = b'WintecLogTk2'
     """ The identification marker at the beginning of the TK2 file. """
 
     def __init__(self):
@@ -969,7 +974,7 @@ class TK2File:
         minutes = 0 if timezone == utc else timezone._minutes # pylint: disable-msg=W0212
         timeZoneSignum = 1 if minutes >= 0 else 0
         hours, minutes = divmod(abs(minutes), 60)
-        return chr(timeZoneSignum) + chr(hours) + chr(minutes)
+        return bytes([timeZoneSignum, hours, minutes])
 
     def getComment(self):
         """
@@ -978,7 +983,7 @@ class TK2File:
         @return: The user comment.
         """
         comment = self.header[0x0082:0x01ae]
-        return unicode(comment,'utf-16').encode(CONSOLE_OUTPUT_ENCODING).strip(chr(0))
+        return comment.decode('utf-16').encode(CONSOLE_OUTPUT_ENCODING).strip(chr(0))
 
     def setComment(self, comment):
         """
@@ -986,7 +991,7 @@ class TK2File:
         
         @param comment: The user comment as string with input encoding of the console.
         """
-        commentUnicode = unicode(comment[:150], CONSOLE_INPUT_ENCODING).encode('unicode_internal')
+        commentUnicode = comment[:150].encode('utf_16')
         header = self.header
         header = header[:0x0082] + commentUnicode + fillBytes(chr(0), 300-len(commentUnicode)) + header[0x01ae:]
         assert len(header) == TK2File.HEADERLEN
@@ -1117,28 +1122,30 @@ class TK2File:
         @param timezone: The timezone.
         """
         # pylint: disable-msg=R0914
-        trackpointcount = trackdatalen / Trackpoint.TRACKPOINTLEN
-        commentUnicode = unicode(comment[:150], CONSOLE_INPUT_ENCODING).encode('unicode_internal')
+        trackpointcount = int(trackdatalen / Trackpoint.TRACKPOINTLEN)
+        commentUnicode = comment[:150].encode('utf_16')
         firstTrackpoint = Trackpoint(self.trackdata[0:Trackpoint.TRACKPOINTLEN])
         firstTrackpointDate = firstTrackpoint.getDateTime(timezone).strftime("%Y-%m-%dT%H:%M:%SZ%z")
         firstTrackpointDate = firstTrackpointDate[:-2] + ":" + firstTrackpointDate[-2:]
-        header = TK2File.FILEMARKER + chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 struct.pack('<f', logversion) + \
-                 struct.pack('<f', SOFTWARE_VERSION) + \
-                 struct.pack('<f', HARDWARE_VERSION) + \
-                 chr(0x41) + chr(0xbf) + \
-                 devicename + fillBytes(chr(0), 20-len(devicename)) + \
-                 deviceinfo + fillBytes(chr(0), 20-len(deviceinfo)) + \
-                 deviceserial + fillBytes(chr(0), 40-len(deviceserial)) + \
-                 exporttimestring + fillBytes(chr(0), 20-len(exporttimestring)) + \
-                 commentUnicode + fillBytes(chr(0), 300-len(commentUnicode)) + \
-                 self.formatTkTimezone(timezone) + \
-                 firstTrackpointDate + chr(0) + \
-                 struct.pack('<i', trackpointcount) + \
-                 struct.pack('<i', trackduration) + \
-                 struct.pack('<i', tracklength) + \
-                 struct.pack('<i', trackpushpointcount) + \
-                 fillBytes(chr(0), 548)
+        firstTrackpointDate = firstTrackpointDate.encode("ascii")
+        header = b""
+        header += TK2File.FILEMARKER + bytes([ 0x00, 0x00, 0x00, 0x00])
+        header += struct.pack('<f', logversion)
+        header += struct.pack('<f', SOFTWARE_VERSION)
+        header += struct.pack('<f', HARDWARE_VERSION)
+        header += bytes([0x41, 0xbf])
+        header += devicename + fillBytes(0x00, 20-len(devicename))
+        header += deviceinfo + fillBytes(0x00, 20-len(deviceinfo))
+        header += deviceserial + fillBytes(0x00, 40-len(deviceserial))
+        header += exporttimestring + fillBytes(0x00, 20-len(exporttimestring))
+        header += commentUnicode + fillBytes(0x00, 300-len(commentUnicode))
+        header += self.formatTkTimezone(timezone)
+        header += firstTrackpointDate + bytes([0x00])
+        header += struct.pack('<i', trackpointcount)
+        header += struct.pack('<i', trackduration)
+        header += struct.pack('<i', tracklength)
+        header += struct.pack('<i', trackpushpointcount)
+        header += fillBytes(0x00, 548)
         assert len(header) == TK2File.HEADERLEN
         return header
 
@@ -1289,32 +1296,34 @@ class TK3File(TK2File):
         @param comment: A user comment string.
         """
         # pylint: disable-msg=W0221,R0914
-        trackpointcount = trackdatalen / Trackpoint.TRACKPOINTLEN
-        commentUnicode = unicode(comment[:150], CONSOLE_INPUT_ENCODING).encode('unicode_internal')
+        trackpointcount = int(trackdatalen / Trackpoint.TRACKPOINTLEN)
+        commentUnicode = comment[:150].encode('utf_16')
         firstTrackpoint = Trackpoint(self.trackdata[0:Trackpoint.TRACKPOINTLEN])
         lastTrackpoint = Trackpoint(self.trackdata[-Trackpoint.TRACKPOINTLEN:])
         firstTrackpointDate = firstTrackpoint.getDateTime(timezone).strftime("%Y-%m-%dT%H:%M:%SZ%z")
         firstTrackpointDate = firstTrackpointDate[:-2] + ":" + firstTrackpointDate[-2:]
         lastTrackpointDate = lastTrackpoint.getDateTime(timezone).strftime("%Y-%m-%dT%H:%M:%SZ%z")
         lastTrackpointDate = lastTrackpointDate[:-2] + ":" + lastTrackpointDate[-2:]
+        lastTrackpointDate = lastTrackpointDate.encode("ascii")
 
-        header = TK3File.FILEMARKER + chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 struct.pack('<f', logversion) + \
-                 struct.pack('<f', SOFTWARE_VERSION) + \
-                 struct.pack('<f', HARDWARE_VERSION) + \
-                 chr(0x41) + chr(0xbf) + \
-                 devicename + fillBytes(chr(0), 20-len(devicename)) + \
-                 deviceinfo + fillBytes(chr(0), 20-len(deviceinfo)) + \
-                 fillBytes(chr(0), 40) + \
-                 exporttimestring + fillBytes(chr(0), 20-len(exporttimestring)) + \
-                 commentUnicode + fillBytes(chr(0), 300-len(commentUnicode)) + \
-                 self.formatTkTimezone(timezone) + \
-                 firstTrackpointDate + \
-                 chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 lastTrackpointDate + \
-                 chr(0x00) + chr(0x00) + chr(0x00) + chr(0x00) + \
-                 struct.pack('<i', trackpointcount) + \
-                 fillBytes(chr(0), 527)
+        header = b""
+        header += TK3File.FILEMARKER + bytes([0x00, 0x00, 0x00, 0x00])
+        header += struct.pack('<f', logversion)
+        header += struct.pack('<f', SOFTWARE_VERSION)
+        header += struct.pack('<f', HARDWARE_VERSION)
+        header +=  bytes([0x41, 0xbf])
+        header += devicename + fillBytes(0x00, 20-len(devicename))
+        header += deviceinfo + fillBytes(0x00, 20-len(deviceinfo))
+        header += fillBytes(0x00, 40)
+        header += exporttimestring + fillBytes(0x00, 20-len(exporttimestring))
+        header += commentUnicode + fillBytes(0x00, 300-len(commentUnicode))
+        header += self.formatTkTimezone(timezone)
+        header += firstTrackpointDate
+        header += bytes([0x00, 0x00, 0x00, 0x00])
+        header += lastTrackpointDate
+        header += bytes([0x00, 0x00, 0x00, 0x00])
+        header += struct.pack('<i', trackpointcount)
+        header += fillBytes(0x00, 527)
         assert len(header) == TK3File.HEADERLEN
         return header
 
@@ -1336,7 +1345,7 @@ def readTKFile(fileName):
     try:
         fileClass = fileTypes[fileMarker]
     except KeyError:
-        print "%s is not a valid TK file!" % fileName
+        print("%s is not a valid TK file!" % fileName)
         return None
     tkFile = fileClass()
     f.seek(0)
@@ -1362,7 +1371,7 @@ def createOutputFile(outputDir, filename, template, value, flags = "w"):
         filename = template % value
     if outputDir:
         filename = os.path.join(outputDir, filename) 
-    print 'Create %s' % filename
+    print('Create %s' % filename)
     return open(filename, flags)
 
 def fillBytes(byte, count):
@@ -1374,7 +1383,7 @@ def fillBytes(byte, count):
     @return: A string of bytes with the given length.
     """
     assert count >= 0
-    return count * byte
+    return count * bytes([byte])
 
 def guessLogVersion(trackdata):
     """

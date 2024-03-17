@@ -5,6 +5,8 @@
 ##
 ## Copyright (c) 2008 Steffen Siebert <siebert@steffensiebert.de>
 ##
+## Ported to Python 3 by BlinxFox
+##
 #################################################################################
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -25,18 +27,19 @@
 ## Requirements                                                                ##
 #################################################################################
 ##
-## Python 2.5 or later:
+## Python 3.10 or later:
 ## <http://www.python.org>
 ##
 #################################################################################
 ## Support                                                                     ##
 #################################################################################
 ##
-## The latest version of the wintec tools is always available from my homepage:
-## <http://www.SteffenSiebert.de/soft/python/wintec_tools.html>
+## The latest version of the wintec tools is available on Github
+## <https://github.com/BlinxFox/WintecTools>
 ##
-## If you have bug reports, patches or some questions, just send a mail to
-## <wintec_tools@SteffenSiebert.de>
+## If you have bug reports, patches or some questions, please create an 
+## issue on Github:
+## <https://github.com/BlinxFox/WintecTools>
 ##
 #################################################################################
 
@@ -68,12 +71,12 @@ def usage():
     Print program usage.
     """
     executable = os.path.split(sys.argv[0])[1]
-    print "%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION)
-    print "Read tk1 file, recalculate the footer data and create a tk1 file with a generic name.\n"
-    print 'Usage: %s [-d directory] [-o filename] [--delete] <tk1 file>' % executable
-    print "-d: Use output directory."
-    print "-o: Use output filename."
-    print "--delete: Delete source file after successful processing."
+    print("%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION))
+    print("Read tk1 file, recalculate the footer data and create a tk1 file with a generic name.\n")
+    print('Usage: %s [-d directory] [-o filename] [--delete] <tk1 file>' % executable)
+    print("-d: Use output directory.")
+    print("-o: Use output filename.")
+    print("--delete: Delete source file after successful processing.")
 
 def main():
     """
@@ -105,7 +108,7 @@ def main():
             deleteSource = True
 
     if filename and os.path.exists(os.path.join(outputDir if outputDir else ".", filename)):
-        print "Output file %s already exists!" % filename
+        print("Output file %s already exists!" % filename)
         sys.exit(4)
 
     tk1Source = TK1File()

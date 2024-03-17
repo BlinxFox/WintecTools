@@ -4,6 +4,8 @@
 ##
 ## Copyright (c) 2008 Steffen Siebert <siebert@steffensiebert.de>
 ##
+## Ported to Python 3 by BlinxFox
+##
 #################################################################################
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -24,7 +26,7 @@
 ## Requirements                                                                ##
 #################################################################################
 ##
-## Python 2.5 or later:
+## Python 3.10 or later:
 ## <http://www.python.org>
 ##
 #################################################################################
@@ -38,11 +40,12 @@
 ## Support                                                                     ##
 #################################################################################
 ##
-## The latest version of the wintec tools is always available from my homepage:
-## <http://www.SteffenSiebert.de/soft/python/wintec_tools.html>
+## The latest version of the wintec tools is available on Github
+## <https://github.com/BlinxFox/WintecTools>
 ##
-## If you have bug reports, patches or some questions, just send a mail to
-## <wintec_tools@SteffenSiebert.de>
+## If you have bug reports, patches or some questions, please create an 
+## issue on Github:
+## <https://github.com/BlinxFox/WintecTools>
 ##
 #################################################################################
 
@@ -175,11 +178,11 @@ def usage():
     Print program usage.
     """
     executable = os.path.split(sys.argv[0])[1]
-    print "%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION)
-    print "Convert gps tracklogs from Wintec TK files into a single NMEA-0183 file.\n"
-    print "Usage: %s [-d outputdir] [-o filename] <tk files>" % executable
-    print "-d: Use output directory."
-    print "-o: Use output filename."
+    print("%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION))
+    print("Convert gps tracklogs from Wintec TK files into a single NMEA-0183 file.\n")
+    print("Usage: %s [-d outputdir] [-o filename] <tk files>" % executable)
+    print("-d: Use output directory.")
+    print("-o: Use output filename.")
 
 def main():
     """
@@ -209,7 +212,7 @@ def main():
             filename = a
 
     if outputDir and not os.path.exists(outputDir):
-        print "Output directory %s doesn't exist!" % outputDir
+        print("Output directory %s doesn't exist!" % outputDir)
         sys.exit(3)
 
     tkfiles = []
@@ -217,7 +220,7 @@ def main():
         for tkFileName in glob(arg):
             tkfiles.append(readTKFile(tkFileName))
 
-    tkfiles.sort(lambda x, y: cmp(x.getFirstTrackpoint().getDateTime(), y.getFirstTrackpoint().getDateTime()))
+    tkfiles.sort(key=lambda x: x.getFirstTrackpoint().getDateTime())
     
     try:
         if len(tkfiles) > 1:

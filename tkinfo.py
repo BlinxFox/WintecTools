@@ -4,6 +4,8 @@
 ##
 ## Copyright (c) 2008 Steffen Siebert <siebert@steffensiebert.de>
 ##
+## Ported to Python 3 by BlinxFox
+##
 #################################################################################
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -24,18 +26,19 @@
 ## Requirements                                                                ##
 #################################################################################
 ##
-## Python 2.5 or later:
+## Python 3.10 or later:
 ## <http://www.python.org>
 ##
 #################################################################################
 ## Support                                                                     ##
 #################################################################################
 ##
-## The latest version of the wintec tools is always available from my homepage:
-## <http://www.SteffenSiebert.de/soft/python/wintec_tools.html>
+## The latest version of the wintec tools is available on Github
+## <https://github.com/BlinxFox/WintecTools>
 ##
-## If you have bug reports, patches or some questions, just send a mail to
-## <wintec_tools@SteffenSiebert.de>
+## If you have bug reports, patches or some questions, please create an 
+## issue on Github:
+## <https://github.com/BlinxFox/WintecTools>
 ##
 #################################################################################
 
@@ -55,12 +58,12 @@ def usage():
     Print program usage.
     """
     executable = os.path.split(sys.argv[0])[1]
-    print "%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION)
-    print "Display TK file information and optionally set user comment string and/or timezone for .tk2/.tk3 files.\n"
-    print 'Usage: %s [-c "user comment"] [-t +hh:mm|--autotz] <tk files>' % executable
-    print "-c: User comment string to store in the .tk2/tk3 header."
-    print "-t: .tk2/.tk3: Set timezone for local time (offset to UTC). .tk1: Ignored."
-    print "--autotz: .tk2/.tk3: Determine timezone from first trackpoint. .tk1: Ignored."
+    print("%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION))
+    print("Display TK file information and optionally set user comment string and/or timezone for .tk2/.tk3 files.\n")
+    print('Usage: %s [-c "user comment"] [-t +hh:mm|--autotz] <tk files>' % executable)
+    print("-c: User comment string to store in the .tk2/tk3 header.")
+    print("-t: .tk2/.tk3: Set timezone for local time (offset to UTC). .tk1: Ignored.")
+    print("--autotz: .tk2/.tk3: Determine timezone from first trackpoint. .tk1: Ignored.")
 
 def main():
     """
@@ -91,7 +94,7 @@ def main():
         if o == "-t":
             timezone = parseTimezone(a)
             if timezone == None:
-                print "Timzone string doesn't match pattern +hh:mm!"
+                print("Timzone string doesn't match pattern +hh:mm!")
                 sys.exit(4)
         if o == "--autotz":
             autotimezone = True
@@ -114,9 +117,9 @@ def main():
                 f = open(tkFileName, "wb")
                 tkfile.write(f)
                 f.close()
-            print "Filename: %s" % tkFileName
-            print "Canonical filename: %s" % tkfile.createFilename()
-            print tkfile
+            print("Filename: %s" % tkFileName)
+            print("Canonical filename: %s" % tkfile.createFilename())
+            print(tkfile)
 
 if __name__ == "__main__":
     main()

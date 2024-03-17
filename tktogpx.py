@@ -4,6 +4,8 @@
 ##
 ## Copyright (c) 2008 Steffen Siebert <siebert@steffensiebert.de>
 ##
+## Ported to Python 3 by BlinxFox
+##
 #################################################################################
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -24,7 +26,7 @@
 ## Requirements                                                                ##
 #################################################################################
 ##
-## Python 2.2 or later:
+## Python 3.10 or later:
 ## <http://www.python.org>
 ##
 #################################################################################
@@ -38,11 +40,12 @@
 ## Support                                                                     ##
 #################################################################################
 ##
-## The latest version of the wintec tools is always available from my homepage:
-## <http://www.SteffenSiebert.de/soft/python/wintec_tools.html>
+## The latest version of the wintec tools is available on Github
+## <https://github.com/BlinxFox/WintecTools>
 ##
-## If you have bug reports, patches or some questions, just send a mail to
-## <wintec_tools@SteffenSiebert.de>
+## If you have bug reports, patches or some questions, please create an 
+## issue on Github:
+## <https://github.com/BlinxFox/WintecTools>
 ##
 #################################################################################
 
@@ -175,10 +178,10 @@ def writeMetadata(tkfiles, outputFile):
                 if longitude > maxLon:
                     maxLon = longitude
                 
-                if latitude < minLat or minLat is None:
+                if minLat is None or latitude < minLat:
                     minLat = latitude
                 
-                if longitude < minLon or minLon is None:
+                if minLon is None or longitude < minLon:
                     minLon = longitude
                 # FIXME: Time Machine X uses values higher than the maximum/lower than the minimum.
                 #        I have no idea how these values are computed.
@@ -309,19 +312,19 @@ def usage():
     Print program usage.
     """
     executable = os.path.split(sys.argv[0])[1]
-    print "%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION)
-    print "Convert gps tracklogs from Wintec TK files into a single GPS eXchange file.\n"
-    print "Usage: %s [-d outputdir] [-o filename] [-t +hh:mm|--autotz] <tk files>" % executable
-    print "-d: Use output directory."
-    print "-o: Use output filename."
-    print "-t: .tk1     : Use timezone for local time (offset to UTC)."
-    print "    .tk2/.tk3: Use timezone stored in tk-file."
-    print "--autotz: .tk1     : Determine timezone from first trackpoint."
-    print "          .tk2/.tk3: Use timezone stored in tk-file."
-    print
-    print "Note: The time in .gpx files is defined as UTC. If you use the -t or --autotz"
-    print "option, the time is converted to the timezone, but still marked as UTC."
-    print "The used timezone is added to the <desc> tag."
+    print("%s Version %s (C) 2008 Steffen Siebert <siebert@steffensiebert.de>" % (executable, VERSION))
+    print("Convert gps tracklogs from Wintec TK files into a single GPS eXchange file.\n")
+    print("Usage: %s [-d outputdir] [-o filename] [-t +hh:mm|--autotz] <tk files>" % executable)
+    print("-d: Use output directory.")
+    print("-o: Use output filename.")
+    print("-t: .tk1     : Use timezone for local time (offset to UTC).")
+    print("    .tk2/.tk3: Use timezone stored in tk-file.")
+    print("--autotz: .tk1     : Determine timezone from first trackpoint.")
+    print("          .tk2/.tk3: Use timezone stored in tk-file.")
+    print()
+    print("Note: The time in .gpx files is defined as UTC. If you use the -t or --autotz")
+    print("option, the time is converted to the timezone, but still marked as UTC.")
+    print("The used timezone is added to the <desc> tag.")
 
 def main():
     """
@@ -356,14 +359,14 @@ def main():
         if o == "-t":
             timezone = parseTimezone(a)
             if timezone == None:
-                print "Timzone string doesn't match pattern +hh:mm!"
+                print("Timzone string doesn't match pattern +hh:mm!")
                 sys.exit(4)
             usetimezone = True
         if o == "--autotz":
             usetimezone = autotimezone = True
 
     if outputDir and not os.path.exists(outputDir):
-        print "Output directory %s doesn't exist!" % outputDir
+        print("Output directory %s doesn't exist!" % outputDir)
         sys.exit(3)
 
     tkfiles = []
@@ -376,7 +379,7 @@ def main():
                 tkfile.setAutotimezone(autotimezone)
             tkfiles.append(tkfile)
 
-    tkfiles.sort(lambda x, y: cmp(x.getFirstTrackpoint().getDateTime(), y.getFirstTrackpoint().getDateTime()))
+    tkfiles.sort(key=lambda x: x.getFirstTrackpoint().getDateTime())
     
     try:
         if len(tkfiles) > 1:
